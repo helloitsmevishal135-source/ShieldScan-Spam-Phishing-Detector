@@ -38,9 +38,9 @@ def scan():
 
     if request.is_json:
         data = request.get_json(silent=True) or {}
-        user_input = (data.get("input_data") or "").strip()
+        user_input = (data.get("input_data") or data.get("input_text") or data.get("text") or "").strip()
     else:
-        user_input = (request.form.get("input_data") or "").strip()
+        user_input = (request.form.get("input_data") or request.form.get("input_text") or request.form.get("text") or "").strip()
 
     try:
         result = perform_scan(current_user, user_input)

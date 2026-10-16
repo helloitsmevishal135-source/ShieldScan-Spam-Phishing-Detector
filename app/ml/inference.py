@@ -17,7 +17,8 @@ from app.services.blocked_domains import get_blocked_domains
 
 logger = logging.getLogger(__name__)
 
-SKLEARN_DIR = Path("models/sklearn")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+SKLEARN_DIR = BASE_DIR / "models" / "sklearn"
 USE_SKLEARN = SKLEARN_DIR.joinpath("spam_pipeline.joblib").exists() and SKLEARN_DIR.joinpath(
     "phishing_rf.joblib"
 ).exists()
@@ -31,9 +32,9 @@ def _load_sklearn_models() -> tuple[SpamModel, PhishingModel]:
 def _load_legacy_models():
     import pickle
 
-    nb_model = pickle.load(open("models/nb_model.pkl", "rb"))
-    vectorizer = pickle.load(open("models/vectorizer.pkl", "rb"))
-    rf_model = pickle.load(open("models/rf_model.pkl", "rb"))
+    nb_model = pickle.load(open(BASE_DIR / "models" / "nb_model.pkl", "rb"))
+    vectorizer = pickle.load(open(BASE_DIR / "models" / "vectorizer.pkl", "rb"))
+    rf_model = pickle.load(open(BASE_DIR / "models" / "rf_model.pkl", "rb"))
     return nb_model, vectorizer, rf_model
 
 

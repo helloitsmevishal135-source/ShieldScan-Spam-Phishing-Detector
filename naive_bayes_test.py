@@ -25,6 +25,11 @@ def predict(text):
 
 
 if __name__ == "__main__":
+    import sys
+
+    if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     test_texts = [
         "I will go to college tomorrow",
         "You won a free iPhone click now",

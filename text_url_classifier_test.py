@@ -1,6 +1,11 @@
 from text_url_classifier import TextURLClassifier   # adjust filename
 
 if __name__ == "__main__":
+    import sys
+
+    if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     clf = TextURLClassifier(n_trees=20, seed=42)
 
     texts = [
