@@ -99,9 +99,10 @@ def create_app(config_class=Config):
     from app.admin.bootstrap import ensure_default_admin
     ensure_default_admin()
 
-    from app.tasks.gmail_sync import init_gmail_scheduler
+    if not os.environ.get("VERCEL"):
+        from app.tasks.gmail_sync import init_gmail_scheduler
 
-    init_gmail_scheduler(app)
+        init_gmail_scheduler(app)
 
     @app.route("/")
     def root():
