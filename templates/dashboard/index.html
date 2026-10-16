@@ -1,0 +1,250 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}Dashboard | ShieldScan{% endblock %}
+
+{% block content %}
+<section class="welcome-section fade-in">
+    <div>
+        <p class="text-muted mb-1">Security overview</p>
+        <h1>Hello, {{ current_user.username }}</h1>
+        <p class="text-secondary">Scan URLs or messages for spam and phishing threats.</p>
+    </div>
+    <div class="gmail-actions" id="gmailActions"
+         data-connected="{{ 'true' if gmail_connected|default(false) else 'false' }}"
+         data-oauth-configured="{{ 'true' if gmail_oauth_configured|default(false) else 'false' }}"
+         data-sync-minutes="{{ config.GMAIL_SYNC_INTERVAL_MINUTES }}">
+        {% if gmail_connected|default(false) %}
+        <span class="badge bg-success gmail-badge"><i class="fa-brands fa-google"></i> Gmail connected</span>
+        {% if gmail_last_sync %}
+        <span class="text-muted small ms-2" id="gmailLastSync">Last sync: {{ gmail_last_sync.strftime('%b %d, %H:%M') }} UTC</span>
+        {% else %}
+        <span class="text-muted small ms-2 d-none" id="gmailLastSync"></span>
+        {% endif %}
+        <button type="button" class="btn btn-sm btn-outline-light ms-2" id="gmailRefreshBtn"
+                data-sync-url="{{ url_for('gmail.sync_now') }}">
+            <span class="btn-text"><i class="fa-solid fa-rotate"></i> Refresh Gmail</span>
+            <span class="btn-loading d-none">
+                <span class="spinner-border spinner-border-sm" role="status"></span>
+                Refreshing…
+            </span>
+        </button>
+        <form method="POST" action="{{ url_for('gmail.disconnect') }}" class="d-inline ms-2" id="gmailDisconnectForm">
+            <button type="submit" class="btn btn-sm btn-outline-secondary">Disconnect</button>
+        </form>
+        <div id="gmailRefreshStatus" class="w-100 small mt-1" aria-live="polite"></div>
+        {% else %}
+        {% if gmail_oauth_configured|default(false) %}
+        <a href="{{ url_for('gmail.connect') }}" class="btn btn-sm btn-outline-light gmail-connect-btn">
+            <i class="fa-brands fa-google"></i> Connect Gmail
+        </a>
+        {% else %}
+        <span class="text-muted small">Gmail: set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env</span>
+        {% endif %}
+        {% endif %}
+    </div>
+</section>
+
+<div class="row g-4">
+    <!-- Quick scan -->
+    <div class="col-lg-7">
+        <div class="card scan-card fade-in">
+            <div class="card-header-custom">
+                <h2><i class="fa-solid fa-radar"></i> Quick scan</h2>
+            </div>
+            <div class="card-body">
+                <form id="scanForm" method="POST" action="{{ url_for('dashboard.scan') }}">
+                    <div class="input-group-scan has-textarea">
+                        <i class="fa-solid fa-link input-icon"></i>
+                        <textarea class="form-control" id="input_data" name="input_data" rows="3"
+                                  placeholder="Paste a URL or message to analyze..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-scan mt-3" id="scanBtn">
+                        <span class="btn-text"><i class="fa-solid fa-magnifying-glass"></i> Detect threat</span>
+                        <span class="btn-loading d-none">
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                            Analyzing...
+                        </span>
+                    </button>
+                </form>
+
+                <div id="scanResult" class="scan-result mt-4 {% if not last_result %}d-none{% endif %}">
+                    {% if last_result %}
+                    {% set r = last_result %}
+                    {% set threat = r.threat if r.threat else {'text':'Unknown','color':'warning','icon':'fa-question','action':'Review'} %}
+                    <div class="result-panel threat-{{ r.threat_level }}">
+                        <div class="threat-level-hero">
+                            <span class="threat-badge badge-{{ threat.color }} threat-level-badge">
+                                <i class="fa-solid {{ threat.icon }}"></i> {{ threat.text }}
+                            </span>
+                            <p class="threat-level-sub text-muted mb-0">{{ r.type }} scan</p>
+                        </div>
+                        <h3 class="result-label">{{ r.label }}</h3>
+                        <p class="result-action mb-0">{{ threat.action }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="col-lg-5">
+        <div class="row g-3">
+            <div class="col-6">
+                <div class="stat-card fade-in">
+                    <span class="stat-label">Total scans</span>
+                    <span class="stat-value" id="statTotal">{{ stats.total }}</span>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="stat-card stat-safe fade-in">
+                    <span class="stat-label">Safe</span>
+                    <span class="stat-value text-success" id="statSafe">{{ stats.safe }}</span>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="stat-card stat-threat fade-in">
+                    <span class="stat-label">Threats</span>
+                    <span class="stat-value text-danger" id="statThreats">{{ stats.threats }}</span>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="stat-card fade-in">
+                    <span class="stat-label">Dangerous</span>
+                    <span class="stat-value text-danger" id="statDangerous">{{ stats.dangerous }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card chart-card mt-3 fade-in">
+            <div class="card-header-custom">
+                <h2><i class="fa-solid fa-chart-pie"></i> Detection stats</h2>
+            </div>
+            <div class="card-body chart-body">
+                <canvas id="statsChart" height="180"
+                        data-safe="{{ stats.safe }}"
+                        data-suspicious="{{ stats.suspicious }}"
+                        data-dangerous="{{ stats.dangerous }}"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Website Link Analyzer -->
+<div class="card scan-card mt-4 fade-in">
+    <div class="card-header-custom">
+        <h2><i class="fa-solid fa-spider"></i> Website Link Analyzer</h2>
+    </div>
+    <div class="card-body">
+        <p class="text-muted small mb-3">
+            Crawl a webpage, extract hyperlinks, and analyze each URL with the phishing model.
+        </p>
+        <form id="websiteForm" method="POST" action="{{ url_for('crawler.analyze') }}" novalidate>
+            <div class="input-group-scan">
+                <i class="fa-solid fa-globe input-icon"></i>
+                <input type="text" class="form-control" id="website_url" name="url"
+                       placeholder="https://example.com" inputmode="url" autocomplete="url" required>
+            </div>
+            <button type="submit" class="btn btn-outline-primary btn-scan mt-3" id="websiteBtn">
+                <span class="btn-text"><i class="fa-solid fa-magnifying-glass-chart"></i> Analyze website</span>
+                <span class="btn-loading d-none">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                    Crawling...
+                </span>
+            </button>
+        </form>
+        <div id="websiteResult" class="website-result mt-4 d-none"></div>
+    </div>
+</div>
+
+<!-- Gmail automated scans -->
+<div class="card history-card mt-4 fade-in" id="gmailEmailCard">
+    <div class="card-header-custom d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h2><i class="fa-solid fa-envelope"></i> Gmail scan results</h2>
+        {% if gmail_connected|default(false) %}
+        <span class="text-muted small">Auto-sync every {{ config.GMAIL_SYNC_INTERVAL_MINUTES }} min</span>
+        {% endif %}
+    </div>
+    <div class="table-responsive">
+        <table class="table table-dark table-hover history-table mb-0" id="gmailEmailTable">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Sender</th>
+                    <th>Threat level</th>
+                    <th>Result</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody id="gmailEmailBody">
+                {% for email in recent_emails|default([]) %}
+                <tr class="email-row email-{{ email.risk_label }}">
+                    <td class="input-cell" title="{{ email.subject }}">{{ email.subject[:50] }}{% if email.subject|length > 50 %}…{% endif %}</td>
+                    <td class="small text-muted">{{ email.sender[:40] }}{% if email.sender|length > 40 %}…{% endif %}</td>
+                    <td>
+                        <span class="threat-dot threat-{{ email.threat_level }}"></span>
+                        {{ email.threat_level|capitalize }}
+                    </td>
+                    <td class="small">{{ email.label }}</td>
+                    <td class="text-muted small">{{ email.created_at.strftime('%b %d, %H:%M') }}</td>
+                </tr>
+                {% else %}
+                <tr id="emptyGmailEmails">
+                    <td colspan="5" class="text-center text-muted py-4">
+                        {% if gmail_connected|default(false) %}
+                        No scanned emails yet. New messages will appear after sync.
+                        {% else %}
+                        Connect Gmail to automatically scan incoming mail.
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Recent history -->
+<div class="card history-card mt-4 fade-in">
+    <div class="card-header-custom d-flex justify-content-between align-items-center">
+        <h2><i class="fa-solid fa-clock-rotate-left"></i> Recent scans</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-dark table-hover history-table mb-0" id="historyTable">
+            <thead>
+                <tr>
+                    <th>Input</th>
+                    <th>Type</th>
+                    <th>Result</th>
+                    <th>Threat level</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody id="historyBody">
+                {% for scan in recent_scans %}
+                <tr>
+                    <td class="input-cell" title="{{ scan.input_text }}">{{ scan.input_text[:60] }}{% if scan.input_text|length > 60 %}…{% endif %}</td>
+                    <td><span class="badge bg-secondary">{{ scan.input_type }}</span></td>
+                    <td>{{ scan.label }}</td>
+                    <td>
+                        <span class="threat-dot threat-{{ scan.threat_level }}"></span>
+                        {{ scan.threat_level|capitalize }}
+                    </td>
+                    <td class="text-muted small">{{ scan.created_at.strftime('%b %d, %H:%M') }}</td>
+                </tr>
+                {% else %}
+                <tr id="emptyHistory">
+                    <td colspan="5" class="text-center text-muted py-4">No scans yet. Run your first detection above.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/gmail.js') }}"></script>
+{% endblock %}

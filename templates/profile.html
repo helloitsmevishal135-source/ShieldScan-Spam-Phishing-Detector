@@ -1,0 +1,66 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}Profile | ShieldScan{% endblock %}
+
+{% block content %}
+<section class="welcome-section fade-in">
+    <h1>Account profile</h1>
+    <p class="text-secondary">Manage your account information and view activity summary.</p>
+</section>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card fade-in">
+            <div class="card-header-custom">
+                <h2><i class="fa-solid fa-user"></i> Account details</h2>
+            </div>
+            <div class="card-body profile-details">
+                <div class="profile-row">
+                    <span class="label">Username</span>
+                    <span class="value">{{ current_user.username }}</span>
+                </div>
+                <div class="profile-row">
+                    <span class="label">Email</span>
+                    <span class="value">{{ current_user.email }}</span>
+                </div>
+                <div class="profile-row">
+                    <span class="label">Member since</span>
+                    <span class="value">{{ current_user.created_at.strftime('%B %d, %Y') }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card fade-in">
+            <div class="card-header-custom">
+                <h2><i class="fa-solid fa-chart-simple"></i> Activity summary</h2>
+            </div>
+            <div class="card-body profile-details">
+                <div class="profile-row">
+                    <span class="label">Total scans</span>
+                    <span class="value">{{ stats.total }}</span>
+                </div>
+                <div class="profile-row">
+                    <span class="label">Safe detections</span>
+                    <span class="value text-success">{{ stats.safe }}</span>
+                </div>
+                <div class="profile-row">
+                    <span class="label">Suspicious</span>
+                    <span class="value text-warning">{{ stats.suspicious }}</span>
+                </div>
+                <div class="profile-row">
+                    <span class="label">Dangerous</span>
+                    <span class="value text-danger">{{ stats.dangerous }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-primary">
+        <i class="fa-solid fa-arrow-left"></i> Back to dashboard
+    </a>
+</div>
+{% endblock %}

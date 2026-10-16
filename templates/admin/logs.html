@@ -1,0 +1,147 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Admin Logs | ShieldScan{% endblock %}
+
+{% block admin_content %}
+<section class="welcome-section fade-in mb-3">
+    <h1>System Logs</h1>
+    <p class="text-secondary">Scan, auth, training, crawler, and system events.</p>
+</section>
+
+<div class="card fade-in mb-3">
+    <div class="card-body">
+        <form class="row g-2 align-items-end" method="GET">
+            <div class="col-md-4">
+                <label class="form-label">Category</label>
+                <select name="category" class="form-select" onchange="this.form.submit()">
+                    {% for cat in ['scan','auth','training','crawler','system','error','all'] %}
+                    <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>{{ cat|capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Search</label>
+                <input type="text" name="q" class="form-control" value="{{ q }}" placeholder="Search message or input...">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if scan_logs or email_logs %}
+<div class="card history-card fade-in mb-4">
+    <div class="card-header-custom"><h2>Scan logs</h2></div>
+    <div class="table-responsive">
+        <table class="table table-dark table-hover history-table mb-0">
+            <thead>
+                <tr>
+                    <th>User</th><th>Date</th><th>Input</th><th>Type</th>
+                    <th>Prediction</th><th>Probability</th><th>Risk</th><th>Threat</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scan in scan_logs %}
+                <tr>
+                    <td>{{ scan.user.username if scan.user else 'Unknown' }}</td>
+                    <td class="small text-muted">{{ scan.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="input-cell" title="{{ scan.input_text }}">{{ scan.input_text[:50] }}{% if scan.input_text|length > 50 %}…{% endif %}</td>
+                    <td><span class="badge bg-secondary">{{ scan.input_type }}</span></td>
+                    <td>{{ scan.label }}</td>
+                    <td>{{ '%.1f'|format(scan.model_probability or scan.confidence) }}%</td>
+                    <td>{{ '%.1f'|format(scan.risk_score or 0) }}</td>
+                    <td><span class="threat-dot threat-{{ scan.threat_level }}"></span>{{ scan.threat_level }}</td>
+                </tr>
+                {% endfor %}
+                {% for email in email_logs %}
+                <tr>
+                    <td>{{ email.user.username if email.user else 'Unknown' }}</td>
+                    <td class="small text-muted">{{ email.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="input-cell" title="{{ email.subject }}">{{ email.subject[:50] }}</td>
+                    <td><span class="badge bg-secondary">EMAIL</span></td>
+                    <td>{{ email.label }}</td>
+                    <td>{{ '%.1f'|format((email.confidence or 0) * 100 if email.confidence <= 1 else email.confidence) }}%</td>
+                    <td>{{ '%.1f'|format((email.risk_score or 0) * 100 if email.risk_score <= 1 else email.risk_score) }}</td>
+                    <td><span class="threat-dot threat-{{ email.threat_level }}"></span>{{ email.threat_level }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if system_logs %}
+<div class="card history-card fade-in mb-4">
+    <div class="card-header-custom"><h2>System logs</h2></div>
+    <div class="table-responsive">
+        <table class="table table-dark table-sm mb-0">
+            <thead><tr><th>Time</th><th>Level</th><th>Category</th><th>Message</th></tr></thead>
+            <tbody>
+                {% for log in system_logs %}
+                <tr>
+                    <td class="text-muted small">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td><span class="badge bg-{% if log.level == 'ERROR' %}danger{% elif log.level == 'WARNING' %}warning{% else %}secondary{% endif %}">{{ log.level }}</span></td>
+                    <td>{{ log.category }}</td>
+                    <td>{{ log.message }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if training_logs %}
+<div class="card history-card fade-in mb-4">
+    <div class="card-header-custom"><h2>Training logs</h2></div>
+    <div class="table-responsive">
+        <table class="table table-dark table-sm mb-0">
+            <thead><tr><th>Time</th><th>Model</th><th>Version</th><th>By</th><th></th></tr></thead>
+            <tbody>
+                {% for log in training_logs %}
+                <tr>
+                    <td class="text-muted small">{{ log.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ log.model_name }}</td>
+                    <td>{{ log.version }}</td>
+                    <td>{{ log.trained_by or '—' }}</td>
+                    <td><a href="{{ url_for('admin.training_metrics', log_id=log.id) }}" class="btn btn-sm btn-outline-light">Metrics</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if crawler_logs %}
+<div class="card history-card fade-in">
+    <div class="card-header-custom"><h2>Crawler logs</h2></div>
+    <div class="table-responsive">
+        <table class="table table-dark table-sm mb-0">
+            <thead><tr><th>Time</th><th>URL</th><th>Pages</th><th>Links</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for log in crawler_logs %}
+                <tr>
+                    <td class="text-muted small">{{ log.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="input-cell">{{ log.seed_url[:60] }}{% if log.seed_url|length > 60 %}…{% endif %}</td>
+                    <td>{{ log.pages_crawled }}</td>
+                    <td>{{ log.links_found }}</td>
+                    <td>{{ log.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if not scan_logs and not email_logs and not system_logs and not training_logs and not crawler_logs %}
+<div class="card history-card fade-in p-5 text-center text-muted">
+    <i class="fa-solid fa-folder-open mb-3" style="font-size: 2.5rem; opacity: 0.4;"></i>
+    <h5 class="text-light">No logs found</h5>
+    <p class="small mb-0">No records found for category "{{ category|capitalize }}"{% if q %} matching "{{ q }}"{% endif %}.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Admin Dashboard | ShieldScan{% endblock %}
+
+{% block admin_content %}
+<section class="welcome-section fade-in">
+    <div>
+        <p class="text-muted mb-1">Platform overview</p>
+        <h1>Admin Dashboard</h1>
+        <p class="text-secondary">Monitor scans, users, crawler activity, and model health.</p>
+    </div>
+</section>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-6"><div class="stat-card"><span class="stat-label">Users</span><span class="stat-value">{{ stats.total_users }}</span></div></div>
+    <div class="col-md-3 col-6"><div class="stat-card"><span class="stat-label">Total scans</span><span class="stat-value">{{ stats.total_scans }}</span></div></div>
+    <div class="col-md-3 col-6"><div class="stat-card stat-threat"><span class="stat-label">Spam</span><span class="stat-value text-danger">{{ stats.spam_detections }}</span></div></div>
+    <div class="col-md-3 col-6"><div class="stat-card stat-threat"><span class="stat-label">Phishing</span><span class="stat-value text-danger">{{ stats.phishing_detections }}</span></div></div>
+    <div class="col-md-4 col-6"><div class="stat-card"><span class="stat-label">Daily scans</span><span class="stat-value">{{ stats.daily_scans }}</span></div></div>
+    <div class="col-md-4 col-6"><div class="stat-card"><span class="stat-label">Weekly scans</span><span class="stat-value">{{ stats.weekly_scans }}</span></div></div>
+    <div class="col-md-4 col-6"><div class="stat-card"><span class="stat-label">Monthly scans</span><span class="stat-value">{{ stats.monthly_scans }}</span></div></div>
+    <div class="col-md-4 col-6"><div class="stat-card"><span class="stat-label">Crawler runs</span><span class="stat-value">{{ stats.crawler_runs }}</span></div></div>
+    <div class="col-md-4 col-6"><div class="stat-card"><span class="stat-label">Links crawled</span><span class="stat-value">{{ stats.crawler_links }}</span></div></div>
+    <div class="col-md-4 col-6"><div class="stat-card"><span class="stat-label">Training runs</span><span class="stat-value">{{ stats.training_runs }}</span></div></div>
+</div>
+
+<div class="card chart-card fade-in">
+    <div class="card-header-custom"><h2><i class="fa-solid fa-chart-line"></i> Scan activity (14 days)</h2></div>
+    <div class="card-body chart-body" style="height:280px">
+        <canvas id="adminTrendChart"
+                data-labels='{{ trend.labels | tojson }}'
+                data-manual='{{ trend.manual | tojson }}'
+                data-email='{{ trend.email | tojson }}'></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+(function () {
+    const canvas = document.getElementById("adminTrendChart");
+    if (!canvas) return;
+    new Chart(canvas, {
+        type: "line",
+        data: {
+            labels: JSON.parse(canvas.dataset.labels || "[]"),
+            datasets: [
+                { label: "Manual / URL / Website", data: JSON.parse(canvas.dataset.manual || "[]"), borderColor: "#38bdf8", tension: 0.3 },
+                { label: "Gmail email scans", data: JSON.parse(canvas.dataset.email || "[]"), borderColor: "#22c55e", tension: 0.3 },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: "#94a3b8" } } },
+            scales: {
+                x: { ticks: { color: "#94a3b8" }, grid: { color: "rgba(148,163,184,0.1)" } },
+                y: { ticks: { color: "#94a3b8" }, grid: { color: "rgba(148,163,184,0.1)" } },
+            },
+        },
+    });
+})();
+</script>
+{% endblock %}

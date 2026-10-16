@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block body_class %}app-layout admin-layout{% endblock %}
+
+{% block body %}
+<div class="app-shell">
+    <aside class="sidebar admin-sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-user-shield"></i>
+            <span>Admin Panel</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+                <i class="fa-solid fa-gauge-high"></i> Dashboard
+            </a>
+            <a href="{{ url_for('admin.logs') }}" class="nav-link {% if request.endpoint == 'admin.logs' %}active{% endif %}">
+                <i class="fa-solid fa-list"></i> Logs
+            </a>
+            <a href="{{ url_for('admin.models') }}" class="nav-link {% if request.endpoint == 'admin.models' %}active{% endif %}">
+                <i class="fa-solid fa-brain"></i> Models
+            </a>
+            <a href="{{ url_for('admin.domains') }}" class="nav-link {% if request.endpoint == 'admin.domains' %}active{% endif %}">
+                <i class="fa-solid fa-globe"></i> Domains
+            </a>
+            <hr class="sidebar-divider">
+            <a href="{{ url_for('dashboard.index') }}" class="nav-link">
+                <i class="fa-solid fa-arrow-left"></i> User app
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{{ url_for('admin.logout') }}" class="nav-link logout-link">
+                <i class="fa-solid fa-right-from-bracket"></i> Admin sign out
+            </a>
+        </div>
+    </aside>
+
+    <div class="main-wrapper">
+        <main class="main-content">
+            {% include "components/flash_messages.html" %}
+            {% block admin_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}

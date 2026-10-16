@@ -1,0 +1,51 @@
+{
+  "model_name": "spam_multinomial_nb",
+  "trained_at": "2026-07-17T10:22:09.441153+00:00",
+  "metrics": {
+    "accuracy": 0.9796905222437138,
+    "precision": 0.9661016949152542,
+    "recall": 0.8702290076335878,
+    "f1_score": 0.9156626506024096,
+    "confusion_matrix": [
+      [
+        899,
+        4
+      ],
+      [
+        17,
+        114
+      ]
+    ],
+    "classification_report": {
+      "0": {
+        "precision": 0.9814410480349345,
+        "recall": 0.9955703211517165,
+        "f1-score": 0.9884551951621771,
+        "support": 903.0
+      },
+      "1": {
+        "precision": 0.9661016949152542,
+        "recall": 0.8702290076335878,
+        "f1-score": 0.9156626506024096,
+        "support": 131.0
+      },
+      "accuracy": 0.9796905222437138,
+      "macro avg": {
+        "precision": 0.9737713714750944,
+        "recall": 0.9328996643926522,
+        "f1-score": 0.9520589228822933,
+        "support": 1034.0
+      },
+      "weighted avg": {
+        "precision": 0.9794976677073928,
+        "recall": 0.9796905222437138,
+        "f1-score": 0.9792329288784928,
+        "support": 1034.0
+      }
+    }
+  },
+  "extra": {
+    "train_size": 4135,
+    "test_size": 1034
+  }
+}

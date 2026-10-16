@@ -1,0 +1,19 @@
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>ShieldScan</span>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('dashboard.index') }}" class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+        </a>
+        <a href="{{ url_for('profile.index') }}" class="nav-link {% if request.endpoint == 'profile.index' %}active{% endif %}">
+            <i class="fa-solid fa-user"></i> Profile
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="nav-link logout-link">
+            <i class="fa-solid fa-right-from-bracket"></i> Sign out
+        </a>
+    </div>
+</aside>

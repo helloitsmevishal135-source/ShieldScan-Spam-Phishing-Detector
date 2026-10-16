@@ -1,0 +1,32 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Training Metrics | ShieldScan{% endblock %}
+
+{% block admin_content %}
+<section class="welcome-section fade-in mb-3">
+    <h1>Training Metrics</h1>
+    <p class="text-secondary">{{ log.model_name }} — version {{ log.version }}</p>
+</section>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="stat-card"><span class="stat-label">Accuracy</span><span class="stat-value">{{ '%.2f'|format((metrics.accuracy or 0) * 100) }}%</span></div></div>
+    <div class="col-md-3"><div class="stat-card"><span class="stat-label">Precision</span><span class="stat-value">{{ '%.2f'|format((metrics.precision or 0) * 100) }}%</span></div></div>
+    <div class="col-md-3"><div class="stat-card"><span class="stat-label">Recall</span><span class="stat-value">{{ '%.2f'|format((metrics.recall or 0) * 100) }}%</span></div></div>
+    <div class="col-md-3"><div class="stat-card"><span class="stat-label">F1 Score</span><span class="stat-value">{{ '%.2f'|format((metrics.f1_score or 0) * 100) }}%</span></div></div>
+</div>
+
+{% if metrics.confusion_matrix %}
+<div class="card fade-in mb-4">
+    <div class="card-header-custom"><h2>Confusion matrix</h2></div>
+    <div class="card-body">
+        <table class="table table-dark table-bordered w-auto mb-0">
+            {% for row in metrics.confusion_matrix %}
+            <tr>{% for cell in row %}<td class="text-center px-4 py-3">{{ cell }}</td>{% endfor %}</tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<a href="{{ url_for('admin.models') }}" class="btn btn-outline-light">Back to models</a>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block body_class %}app-layout{% endblock %}
+
+{% block body %}
+<div class="app-shell">
+    {% include "components/sidebar.html" %}
+
+    <div class="main-wrapper">
+        <header class="topbar d-lg-none">
+            <button class="btn btn-icon" type="button" id="sidebarToggle" aria-label="Toggle menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <span class="topbar-title">ShieldScan</span>
+        </header>
+
+        <main class="main-content">
+            {% include "components/flash_messages.html" %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

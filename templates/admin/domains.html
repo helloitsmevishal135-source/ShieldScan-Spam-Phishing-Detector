@@ -1,0 +1,95 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Domain Management | ShieldScan{% endblock %}
+
+{% block admin_content %}
+<section class="welcome-section fade-in mb-3">
+    <h1>Domain Management</h1>
+    <p class="text-secondary">Trusted domains reduce risk slightly; blocked domains increase risk. ML always runs.</p>
+</section>
+
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><a class="nav-link {% if tab == 'trusted' %}active{% endif %}" href="{{ url_for('admin.domains', tab='trusted', q=q) }}">Trusted</a></li>
+    <li class="nav-item"><a class="nav-link {% if tab == 'blocked' %}active{% endif %}" href="{{ url_for('admin.domains', tab='blocked', q=q) }}">Blocked</a></li>
+</ul>
+
+<form class="row g-2 mb-3" method="GET">
+    <input type="hidden" name="tab" value="{{ tab }}">
+    <div class="col-md-8"><input type="text" name="q" class="form-control" value="{{ q }}" placeholder="Search domains..."></div>
+    <div class="col-md-4"><button class="btn btn-outline-light w-100">Search</button></div>
+</form>
+
+{% if tab == 'trusted' %}
+<div class="card fade-in mb-4">
+    <div class="card-header-custom"><h2>Add trusted domain</h2></div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('admin.add_trusted') }}" class="row g-2">
+            <div class="col-md-4"><input type="text" name="domain" class="form-control" placeholder="example.com" required></div>
+            <div class="col-md-6"><input type="text" name="notes" class="form-control" placeholder="Notes (optional)"></div>
+            <div class="col-md-2"><button type="submit" class="btn btn-success w-100">Add</button></div>
+        </form>
+    </div>
+</div>
+<div class="card history-card fade-in">
+    <div class="table-responsive">
+        <table class="table table-dark table-hover mb-0">
+            <thead><tr><th>Domain</th><th>Notes</th><th>Active</th><th>Actions</th></tr></thead>
+            <tbody>
+                {% for row in trusted %}
+                <tr>
+                    <td>{{ row.domain }}</td>
+                    <td class="small text-muted">{{ row.notes or '—' }}</td>
+                    <td>{% if row.is_active %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.edit_trusted', domain_id=row.id) }}" class="d-inline-flex gap-1">
+                            <input type="hidden" name="notes" value="{{ row.notes or '' }}">
+                            <input type="checkbox" name="is_active" {% if row.is_active %}checked{% endif %} onchange="this.form.submit()">
+                        </form>
+                        <form method="POST" action="{{ url_for('admin.delete_trusted', domain_id=row.id) }}" class="d-inline" onsubmit="return confirm('Remove this domain?')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center text-muted py-4">No trusted domains yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card fade-in mb-4">
+    <div class="card-header-custom"><h2>Add blocked domain</h2></div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('admin.add_blocked') }}" class="row g-2">
+            <div class="col-md-4"><input type="text" name="domain" class="form-control" placeholder="evil.com" required></div>
+            <div class="col-md-6"><input type="text" name="reason" class="form-control" placeholder="Reason (optional)"></div>
+            <div class="col-md-2"><button type="submit" class="btn btn-danger w-100">Block</button></div>
+        </form>
+    </div>
+</div>
+<div class="card history-card fade-in">
+    <div class="table-responsive">
+        <table class="table table-dark table-hover mb-0">
+            <thead><tr><th>Domain</th><th>Reason</th><th>Active</th><th>Actions</th></tr></thead>
+            <tbody>
+                {% for row in blocked %}
+                <tr>
+                    <td>{{ row.domain }}</td>
+                    <td class="small text-muted">{{ row.reason or '—' }}</td>
+                    <td>{% if row.is_active %}<span class="badge bg-danger">Blocked</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.delete_blocked', domain_id=row.id) }}" class="d-inline" onsubmit="return confirm('Remove block?')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center text-muted py-4">No blocked domains yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

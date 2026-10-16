@@ -1,0 +1,101 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+*.so
+.Python
+
+# --- Virtual environments ---
+venv/
+.venv/
+env/
+ENV/
+.env/
+virtualenv/
+
+# --- Environment & secrets ---
+.env
+.env.*
+!.env.example
+client_secret.json
+client_secrets.json
+credentials.json
+token.json
+token.pickle
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+.secret*
+
+# --- Databases ---
+*.db
+*.sqlite
+*.sqlite3
+instance/*
+!instance/.gitkeep
+
+# --- Logs ---
+logs/
+*.log
+*.log.*
+
+# --- Caches & test tooling ---
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+
+# --- IDE / editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# --- OS ---
+.DS_Store
+.DS_Store?
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# --- Build / distribute ---
+dist/
+build/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# --- Node (if added later) ---
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- Local / temp ---
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig
+
+# --- ML training noise (keep committed model artifacts under models/) ---
+# Uncomment if you prefer not to track generated metrics/plots:
+# models/sklearn/*_metrics_*.json
+# models/sklearn/*_confusion_matrix.png
