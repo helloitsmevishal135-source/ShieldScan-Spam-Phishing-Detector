@@ -99,3 +99,4 @@ temp/
 # Uncomment if you prefer not to track generated metrics/plots:
 # models/sklearn/*_metrics_*.json
 # models/sklearn/*_confusion_matrix.png
+.vercel

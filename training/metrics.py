@@ -6,10 +6,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-import matplotlib
 
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import (
     accuracy_score,
@@ -35,6 +32,12 @@ def evaluate_classifier(y_true, y_pred) -> dict:
 
 
 def save_confusion_matrix_plot(matrix, labels, output_path: Path) -> None:
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except ImportError:
+        return
     matrix = np.array(matrix)
     fig, ax = plt.subplots(figsize=(5, 4))
     im = ax.imshow(matrix, cmap="Blues")

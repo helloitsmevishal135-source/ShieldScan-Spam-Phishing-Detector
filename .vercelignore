@@ -1,0 +1,14 @@
+.venv
+__pycache__
+*.pyc
+*.pyo
+.git
+.gitignore
+.env
+.env.*
+*.csv
+instance/*.db
+models/sklearn/*.png
+*.log
+training/
+tests/
