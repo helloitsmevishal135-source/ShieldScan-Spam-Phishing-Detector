@@ -19,7 +19,12 @@ from app.ml.spam.pipeline import build_spam_pipeline
 from app.ml.spam.preprocess import preprocess_text
 from app.ml.url_features.extractor import LOCAL_URL_FEATURE_NAMES, URLFeatureExtractor
 from app.models import ModelVersion, TrainingLog
-from training.metrics import evaluate_classifier, save_confusion_matrix_plot, save_training_artifacts
+try:
+    from training.metrics import evaluate_classifier, save_confusion_matrix_plot, save_training_artifacts
+except ImportError:
+    evaluate_classifier = None
+    save_confusion_matrix_plot = None
+    save_training_artifacts = None
 
 logger = logging.getLogger(__name__)
 

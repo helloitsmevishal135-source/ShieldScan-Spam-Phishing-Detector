@@ -10,5 +10,4 @@ __pycache__
 instance/*.db
 models/sklearn/*.png
 *.log
-training/
 tests/
